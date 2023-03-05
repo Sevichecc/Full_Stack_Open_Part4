@@ -97,3 +97,23 @@ test('which blog has the most likes', () => {
   const result = listHelper.favoriteBlog(listWithMoreBlogs);
   expect(result).toEqual(mostLikedBlog);
 });
+
+const mostBloger = {
+  author: 'Robert C. Martin',
+  blogs: 3,
+};
+
+test('who has the largest amount of blogs', () => {
+  const result = listHelper.mostBlogs(listWithMoreBlogs);
+  expect(result).toEqual(mostBloger);
+});
+
+const topBlogger = {
+  author: 'Edsger W. Dijkstra',
+  likes: 17,
+};
+
+test('whose blog posts have the largest amount of likes', () => {
+  const result = listHelper.mostLikes(listWithMoreBlogs);
+  expect(result).toEqual(topBlogger);
+});
