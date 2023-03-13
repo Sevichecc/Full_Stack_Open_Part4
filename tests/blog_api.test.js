@@ -3,6 +3,14 @@ const app = require('../app');
 
 const api = supertest(app);
 
+const Blog = require('../models/blog');
+const helper = require('./test_helper');
+
+beforeEach(async () => {
+  await Blog.deleteMany({});
+  await Blog.insertMany(helper.initialBlogs);
+});
+
 test('blogs are returned as json', async () => {
   await api
     .get('/api/blogs')
@@ -13,6 +21,23 @@ test('blogs are returned as json', async () => {
 test('the unique identifier property of the blog posts is name id', async () => {
   const response = await api.get('/api/blogs');
   const id = response.body.map((blog) => blog.id);
-  np;
   expect(id).toBeDefined();
+});
+
+test('a valid blog can be added', async () => {
+  const newBlog = {
+    title: 'I want to die',
+    author: 'Seviche',
+    url: 'http://seviche.cc',
+    likes: 3,
+  };
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
 });
