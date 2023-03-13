@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 
@@ -40,4 +41,26 @@ test('a valid blog can be added', async () => {
 
   const blogsAtEnd = await helper.blogsInDb();
   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+
+  const title = blogsAtEnd.map((blog) => blog.title);
+  expect(title).toContain('I want to die');
+});
+
+test('blog missing likes will set to default value as 0', async () => {
+  const newBlog = {
+    title: 'I want to die',
+    author: 'Seviche',
+    url: 'http://seviche.cc',
+  };
+
+  const response = await api.post('/api/blogs').send(newBlog).expect(201);
+
+  expect(response.body.likes).toBe('0');
+
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+});
+
+afterAll(async () => {
+  await mongoose.connection.close();
 });
