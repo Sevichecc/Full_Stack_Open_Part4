@@ -73,7 +73,11 @@ describe('when there is initially some blogs saved', () => {
         likes: 3,
       }
 
-      await api.post('/api/blogs').send(noTitleBlog).expect(400)
+      await api
+        .post('/api/blogs')
+        .send(noTitleBlog)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
       const noUrlBlog = {
         title: 'I want to die',
@@ -81,7 +85,11 @@ describe('when there is initially some blogs saved', () => {
         likes: 3,
       }
 
-      await api.post('/api/blogs').send(noUrlBlog).expect(400)
+      await api
+        .post('/api/blogs')
+        .send(noUrlBlog)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
       const blogsAtEnd = await helper.blogsInDb()
       expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
@@ -157,7 +165,7 @@ describe('when there is initially one user in db', () => {
     expect(username).toContain(newUser.username)
   })
 
-  test('creation fails with proper statuscode and message if username already taken', async () => {
+  test('creation fails with proper status code and message if username already taken', async () => {
     const userAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -165,6 +173,7 @@ describe('when there is initially one user in db', () => {
       name: 'Superuser',
       password: 'okeyyyy',
     }
+
     const result = await api
       .post('/api/users')
       .send(newUser)
@@ -175,6 +184,45 @@ describe('when there is initially one user in db', () => {
 
     const userAtEnd = await helper.usersInDb()
     expect(userAtEnd).toHaveLength(userAtStart.length)
+  })
+
+  test('password and username must be at least 3 characters long', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const invalidPasswordUser = {
+      username: 'just',
+      name: 'Superuser',
+      password: 'oo',
+    }
+
+    const result1 = await api
+      .post('/api/users')
+      .send(invalidPasswordUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    expect(result1.body.error).toContain(
+      'password must be at least 3 characters long'
+    )
+
+    const invalidUserNameUser = {
+      username: 'ju',
+      name: 'Superuser',
+      password: 'oorrrr',
+    }
+
+    const result2 = await api
+      .post('/api/users')
+      .send(invalidUserNameUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    expect(result2.body.error).toContain(
+      'username must be at least 3 characters long'
+    )
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
   })
 })
 
