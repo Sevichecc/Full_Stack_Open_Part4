@@ -17,14 +17,15 @@
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "lodash": "^4.17.21",
-    "mongoose": "^7.0.0",
-    "morgan": "^1.10.0"
+    "mongoose": "^6.8.4",
+    "mongoose-unique-validator": "^3.1.0"
   },
   "devDependencies": {
     "eslint": "^8.35.0",

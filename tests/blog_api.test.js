@@ -1,11 +1,13 @@
-const { default: mongoose } = require('mongoose')
+const mongoose = require('mongoose')
 const supertest = require('supertest')
+const bcrypt = require('bcrypt')
 
 const app = require('../app')
 
 const api = supertest(app)
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const helper = require('./test_helper')
 
 describe('when there is initially some blogs saved', () => {
@@ -114,6 +116,66 @@ describe('when there is initially some blogs saved', () => {
   })
 })
 
-afterAll(async () => {
-  await mongoose.connection.close()
+describe('when there is initially one user in db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('secert', 10)
+    const user = new User({
+      username: 'root',
+      passwordHash,
+    })
+    await user.save()
+  })
+
+  test('users are returned as json', async () => {
+    await api
+      .get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+  })
+
+  test('creation succeeds with a fresh username', async () => {
+    const userAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'Seviche',
+      name: 'Seviche CC',
+      password: 'okbyby',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const userAtEnd = await helper.usersInDb()
+    expect(userAtEnd).toHaveLength(userAtStart.length + 1)
+
+    const username = userAtEnd.map((u) => u.username)
+    expect(username).toContain(newUser.username)
+  })
+
+  test('creation fails with proper statuscode and message if username already taken', async () => {
+    const userAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'root',
+      name: 'Superuser',
+      password: 'okeyyyy',
+    }
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    expect(result.body.error).toContain('expected `username` to be unique')
+
+    const userAtEnd = await helper.usersInDb()
+    expect(userAtEnd).toHaveLength(userAtStart.length)
+  })
 })
+
+afterAll(async () => await mongoose.connection.close())
