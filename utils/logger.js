@@ -1,9 +1,13 @@
 const info = (...params) => {
-  console.log(params)
+  if (process.env.NODE_MODE !== 'test') {
+    console.log(params)
+  }
 }
 
 const error = (...params) => {
-  console.log(params)
+  if (process.env.NODE_MODE !== 'test') {
+    console.log(params)
+  }
 }
 
-module.exports = { info,error }
+module.exports = { info, error }
