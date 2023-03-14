@@ -86,7 +86,7 @@ describe('when there is initially some blogs saved', () => {
     })
   })
 
-  describe('deletion of a note', () => {
+  describe('deletion of a blog', () => {
     test('succeeds with status code 204 if id is valid', async () => {
       const blogAtStart = await helper.blogsInDb()
       const blogToDelete = blogAtStart[0]
@@ -99,6 +99,18 @@ describe('when there is initially some blogs saved', () => {
       const title = blogAtEnd.map((blog) => blog.title)
       expect(title).not.toContain(blogToDelete.title)
     })
+  })
+
+  test('updating the information of an individual blog post', async () => {
+    const blogAtStart = await helper.blogsInDb()
+    const blogToUpdate = { ...blogAtStart[0], likes: 999 }
+
+    const updatedBlog = await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+
+    expect(updatedBlog.body.likes).toBe(999)
   })
 })
 
