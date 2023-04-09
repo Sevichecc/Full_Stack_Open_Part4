@@ -11,7 +11,6 @@ userRouter.get('/', async (request, response) => {
   })
   response.json(users)
 })
-
 userRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body
 
